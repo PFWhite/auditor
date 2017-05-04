@@ -31,10 +31,10 @@ class Mappings(object):
                 self.regexs[item['header_name']] = self.parse(values_file)
 
     def handler(self, **kwargs):
-        map = kwargs['map']
-        if type(map) != type('string'):
-            map = map['func']
-        return getattr(self, map)(**kwargs)
+        the_map = kwargs['map']
+        if type(the_map) != type('string'):
+            the_map = the_map['func']
+        return getattr(self, the_map)(**kwargs)
 
     def format_date(self, **kwargs):
         item = kwargs.get('item')
@@ -111,22 +111,47 @@ class Mappings(object):
         else:
             return item
 
+    def __arg_map_base(self, callable_item, **kwargs):
+        """
+        Applies the args in the mapping object as *args into
+        the callable_item
+        """
+        headers = kwargs.get('headers')
+        row = kwargs.get('row')
+        arg_list = kwargs.get('args')
+        args = [val, header for val, header in zip(row, headers) if (header in arg_list)]
+        args = [val for val, header in sorted(args, key=lambda x: arg_list.index(x[1]))]
+        return callable_item(*args)
+
     def greater_equal(self, **kwargs):
+        """
+        Tests if the first item is greater equal the second and
+        returns it if it is. Else returns self.bad_data
+        """
         try:
-            item = kwargs.get('item')
-            headers = kwargs.get('headers')
-            row = kwargs.get('row')
-            arg1 = kwargs.get('map').get('args')[0]
-            arg1_val = row[headers.index(arg1)]
-            arg2 = kwargs.get('map').get('args')[1]
-            arg2_val = row[headers.index(arg2)]
-            retval_header = kwargs.get('map').get('retval')[0]
-            retval = row[headers.index(retval_header)]
-            return retval if arg1_val >= arg2_val else self.bad_data
+            func = lambda x, y: x if x >= y else self.bad_data
+            return self.__arg_map_base(func, **kwargs)
         except Exception as ex:
             if self.verbose:
                 print('greater_equal exception')
                 print(ex)
+                print('Occurred with kwargs:')
+                print(kwargs)
+            return self.bad_data
+
+    def space_join(self, **kwargs):
+        """
+        Joins all the args values with a space character
+        """
+        try:
+            func = lambda *x: ' '.join(x)
+            return self.__arg_map_base(func, **kwargs)
+        except Exception as ex:
+            if self.verbose:
+                print('space_join exception')
+                print(ex)
+                print('Occurred with kwargs:')
+                print(kwargs)
             return self.bad_data
 
     def parse(self, infile):
