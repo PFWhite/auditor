@@ -12,8 +12,7 @@ sort:
 new_headers:
   consent_date: 
     name: &consent_date consent_date
-    key: *subject
-    value: *consent_date
+    lookup: *subject
     default: null
     lookup_file: &consent_dates_path configs/consent_dates.yaml
 

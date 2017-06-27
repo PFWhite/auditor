@@ -38,7 +38,7 @@ def main(args=docopt(docstr)):
         config = yaml.load(config_file.read())
 
     csv_file = open(args[_file], 'r', encoding=config['csv_encoding'])
-    data = csv.reader(csv_file, **config['csv_conf'])
+    data = csv.DictReader(csv_file, **config['csv_conf'])
 
     if not args[_do_clean]:
         data = do_add_headers(data, config.get('new_headers'))
@@ -59,30 +59,44 @@ def main(args=docopt(docstr)):
     else:
         print(rows_format(new_rows))
 
-def do_add_headers(data, new_headers):
+def do_add_headers(rows, new_headers):
     new_rows = []
+    for row in rows:
+        new_rows.append(row)
     if not new_headers:
         return data
-    for key in new_headers.keys():
-        header_data = new_headers[key]
-        with open(header_data['lookup_file'], 'r') as lookup_file:
-            lookup_data = yaml.load(lookup_file.read())
-        for index, row in enumerate(data):
-            if index == 0:
-                old_headers = row
-                row.append(new_headers[key]['name'])
-                try:
-                    new_rows[index] = row
-                except IndexError:
-                    new_rows.append(row)
-            else:
-                lookup_key = row[old_headers.index(header_data['key'])]
-                lookup_value = lookup_data.get(lookup_key) or header_data['default'] or ''
-                row.append(lookup_value)
-                try:
-                    new_rows[index] = row
-                except IndexError:
-                    new_rows.append(row)
+    for key, header_data in new_headers.items():
+        if not header_data.get('lookup_file'):
+            value = header_date.get('default')
+            for row in rows:
+                row[key] = value
+        else:
+            with open(header_date['lookup_file'], 'r') as lookup_file:
+                lookup_data = yaml.load(lookup_file.read())
+            for row in new_rows:
+                lookup = header_data.get('lookup')
+                if lookup_data.get(row.get(lookup)):
+                    row[key] = lookup_data.get(row.get(lookup))
+
+
+        # with open(header_data['lookup_file'], 'r') as lookup_file:
+        #     lookup_data = yaml.load(lookup_file.read())
+        # for index, row in enumerate(data):
+        #     if index == 0:
+        #         old_headers = row
+        #         row.append(new_headers[key]['name'])
+        #         try:
+        #             new_rows[index] = row
+        #         except IndexError:
+        #             new_rows.append(row)
+        #     else:
+        #         lookup_key = row[old_headers.index(header_data['key'])]
+        #         lookup_value = lookup_data.get(lookup_key) or header_data['default'] or ''
+        #         row.append(lookup_value)
+        #         try:
+        #             new_rows[index] = row
+        #         except IndexError:
+        #             new_rows.append(row)
     return new_rows
 
 def do_audit(data, verbose):
