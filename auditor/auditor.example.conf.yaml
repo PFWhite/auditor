@@ -40,6 +40,7 @@ maps: &maps
   - &whitelist is_whitelist
   - &blacklist is_blacklist
   - &regex regex
+  - &lookup lookup
   - &empty_okay empty_okay
   - &strip_whitespace strip_whitespace
 
@@ -76,13 +77,19 @@ regexs: &regexs
   - header_name: *value
     vals_file_path: configs/example_regex_capture.yaml
 
+# simpler version of regex that is a 1-1 lookup
+lookups: &lookup
+  - header_name: *lab_type
+    vals_file_path: configs/example_lookup.yaml
+
+
 # mappings try to parse data to another form
 # will pass the value through the maps in left to right order
 mappings: &mappings
   - header: *test_date
     maps: [*format_date]
   - header: *lab_type
-    maps: []
+    maps: [*lookup]
   - header: *value
     maps: [*regex, *blacklist]
   - header: *subject

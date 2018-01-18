@@ -1,0 +1,95 @@
+* problem
+How do I succinctly express auditor operations?
+* what are the operations?
+
+- lookup before
+- replace and lookup
+- format dates
+- remove whitespace
+- blacklist items
+- whitelist items
+- comparison
+- pull some data out of a bigger field
+
+Which really is just the following:
+
+- add item
+- delete item
+- alter item
+
+This is just crud. How do I make the crud specification process obvious
+and hard to screw up?
+
+Additionally we have to deal with the fact that there are many degrees 
+of freedom with this problem
+* what are the degrees of freedom?
+- input data labels
+- output data labels (might be the same as above)
+- external data (lookups)
+- input file name
+- output file name
+- file global operations (sorting rows, ordering columns)
+* possible dsl
+
+# paths will be relative to either the run location 
+# unless a file_root is specified
+# file_root <root_path>
+read <path>
+
+encoding <enc>
+separator <,>
+quotechar <">
+
+write <path>
+
+# here are column order you can add columns
+# they will default to emptry strings
+column_order <the> <columns> <in> <order>
+column_rename <orig> <new>
+column_rename <orig> <new>
+column_rename <orig> <new>
+
+# sorts the output by that particular column
+# adding more than one sorts by the first then the second etc
+row_sort <column_name> ...
+
+# ... are the args that will be curried to the particular function
+# the final arg will always be the whole original row and the
+# return value will be assigned to the column specified initially
+col <column_name>
+| lookup ... 
+| dateparse  
+| return 
+* Implementation
+** col transforms
+each column transform will be in auditor.transforms.<transform_name>
+it will implement 2 functions:
+ - check_args
+ - get_transform_function
+ - compile_time_error
+
+check_args:
+ will see if there are the right things passed aside from the row
+
+get_transform_function:
+ will take everything that was passed and return a closure that takes the same things
+ and returns the value of what the column should be
+
+compile_time_error:
+ returns a human readable string that tells the author what is wrong with their code
+** main runner
+There are two main phases to the program
+
+- read dsl
+- execute dsl program
+
+The reading portion needs to immediately error and generate intelligent
+output that will help the writer make a better program
+
+
+import auditor
+comp = auditor.compiler.AuditorCompiler()
+out = comp('./sample_program.py')
+inter = auditor.interpreter.Interpreter(out)
+inter()
+

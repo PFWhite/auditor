@@ -30,6 +30,11 @@ class Mappings(object):
             with open(item['vals_file_path']) as values_file:
                 self.regexs[item['header_name']] = self.parse(values_file)
 
+        self.lookups = {}
+        for item in config.get('lookups') or []:
+            with open(item['vals_file_path']) as values_file:
+                self.lookups[item['header_name']] = self.parse(values_file)
+
     def handler(self, **kwargs):
         map = kwargs['map']
         if type(map) != type('string'):
@@ -76,6 +81,12 @@ class Mappings(object):
                 print('is_blacklist exception')
                 print(ex)
             return self.bad_data
+
+    def lookup(self, **kwargs):
+        item = kwargs.get('item')
+        header = kwargs.get('header')
+        lookup = self.lookups.get(header)
+        return lookup.get(item) or self.bad_data
 
     def regex(self, **kwargs):
         item = kwargs.get('item')
