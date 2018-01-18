@@ -78,7 +78,7 @@ regexs: &regexs
     vals_file_path: configs/example_regex_capture.yaml
 
 # simpler version of regex that is a 1-1 lookup
-lookups: &lookup
+lookups: &lookups
   - header_name: *lab_type
     vals_file_path: configs/example_lookup.yaml
 
