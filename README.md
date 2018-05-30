@@ -63,6 +63,8 @@ In the D.S.L. you can specify a string with spaces by surrounding it with `"` ch
 
 Note that columns not listed in the column order will not be put into the output file.
 
+Additionally you can have as many column rename instructions as you want. If you want to rename 5 columns, you should have 5 instructions.
+
 ### col blocks
 
 These describe the sequence of transforms to take place in a run of auditor. Each block should have:
